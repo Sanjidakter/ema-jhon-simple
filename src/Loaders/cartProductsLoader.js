@@ -1,30 +1,38 @@
 import { getShoppingCart } from "../utilities/fakedb";
 
 const cartProductsLoader = async () => {
-  const loadedProducts = await fetch("products.json");
-  const products = await loadedProducts.json();
+   // if cart data is in database, you have to use async await
+   const storedCart = getShoppingCart();
+   const ids = Object.keys(storedCart);
+   
+   const loadedProducts = await fetch(`https://ema-jhon-server-ten.vercel.app/productsByIds`, {
+       method: 'POST', 
+       headers: {
+           'content-type': 'application/json'
+       },
+       body: JSON.stringify(ids)
+   });
 
+   const products = await loadedProducts.json();
 
-  //    if cart data is in database, you have to use async await
-  const storedCart = getShoppingCart();
-  const savedCart = [];
+   console.log('products by ID:', products)
 
+   const savedCart = [];
 
-  console.log(storedCart);
-  for(const id in storedCart){
-    const addedProduct = products.find(pd => pd.id ===id);
-    if(addedProduct){
-        const quantity = storedCart[id];
-        addedProduct.quantity = quantity;
-        savedCart.push(addedProduct);
-    }
-  }
-//   console.log(products);
+   for (const id in storedCart) {
+       const addedProduct = products.find(pd => pd._id === id);
+       if (addedProduct) {
+           const quantity = storedCart[id];
+           addedProduct.quantity = quantity;
+           savedCart.push(addedProduct);
+       }
+   }
 
-// if two things are needed to return from a component
-// return [savedCart,products];
-// another option
-// return {products,savedCart}
-  return savedCart;
+   // if you need to send two things
+   // return [products, savedCart]
+   // another options
+   // return { products, cart: savedCart }
+
+   return savedCart;
 };
 export default cartProductsLoader;
